@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block content %}
+<div class="page-heading no-print"><div><h1>Fee statement</h1><p>{{ student.name }} · {{ student.student_number }}</p></div><div class="actions"><a class="secondary-button" href="{{ url_for('fee_statement_csv', student_id=student.id) }}">Export CSV</a><a class="secondary-button" href="{{ url_for('fee_statement_pdf', student_id=student.id) }}">Download PDF</a><button type="button" data-print-page>Print</button></div></div>
+<section class="print-report"><header class="report-print-header"><h1>Fee statement</h1><p>{{ student.name }} · {{ student.student_number }}</p><p>Generated {{ generated_on }}</p></header>
+<div class="card"><div class="table-scroll"><table><thead><tr><th>Fee</th><th>Year</th><th>Due date</th><th>Amount</th><th>Paid</th><th>Balance</th></tr></thead><tbody>
+{% for fee in fees %}<tr><td>{{ fee.description }}</td><td>{{ fee.academic_year or 'Unassigned' }}</td><td>{{ fee.due_date or '—' }}</td><td>{{ '%.2f'|format(fee.amount) }}</td><td>{{ '%.2f'|format(fee.paid_amount) }}</td><td>{{ '%.2f'|format(fee.amount - fee.paid_amount) }}</td></tr>{% else %}<tr><td colspan="6">No fee records.</td></tr>{% endfor %}
+</tbody></table></div></div>
+<div class="card"><h2>Payment history</h2><div class="table-scroll"><table><thead><tr><th>Date</th><th>Fee</th><th>Amount</th><th>Method</th><th>Reference</th></tr></thead><tbody>
+{% for fee in fees %}{% for payment in fee.payments %}<tr><td>{{ payment.payment_date or 'Date unknown' }}</td><td>{{ fee.description }}</td><td>{{ '%.2f'|format(payment.amount) }}</td><td>{{ payment.payment_method or '—' }}</td><td>{{ payment.reference or '—' }}</td></tr>{% endfor %}{% endfor %}
+</tbody></table></div></div></section>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% from "_pagination.html" import render_pagination %}
+{% from "_student_picker.html" import student_picker %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">ACADEMIC MANAGEMENT</p><h1>Enrollments</h1><p>Place students in classes and review enrollment status.</p></div></div>
+<div class="card"><form method="post" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {{ student_picker('enrollment-student', 'Student') }}
+    <label>Class<select name="class_id" required>{% for item in classes %}<option value="{{ item.id }}">{{ item.name }}</option>{% endfor %}</select></label>
+    <div><button>Enroll Student</button></div>
+</form></div>
+<div class="card"><div class="table-scroll"><table><thead><tr><th>Student</th><th>Class</th><th>Academic year</th><th>Status</th><th>Update status</th></tr></thead><tbody>
+{% for item in enrollments %}
+<tr>
+    <td>{{ item.student.name }}</td>
+    <td>{{ item.school_class.name }}</td>
+    <td>{{ item.school_class.academic_year }}</td>
+    <td>{{ item.status|title }}</td>
+    <td>
+        <form method="post" action="{{ url_for('update_enrollment_status', enrollment_id=item.id) }}" class="grid-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label>Status
+                <select name="status" required>
+                    {% for status in enrollment_statuses %}
+                        <option value="{{ status }}" {% if item.status == status %}selected{% endif %}>{{ status|title }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <button type="submit">Save Status</button>
+        </form>
+    </td>
+</tr>
+{% else %}
+<tr><td colspan="5">No enrollments yet.</td></tr>
+{% endfor %}
+</tbody></table></div>
+{{ render_pagination(pagination, request.endpoint, request.args.to_dict()) }}
+</div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Staff sign in | School Registration{% endblock %}
+{% block content %}
+<h1>Staff sign in</h1>
+<div class="card login-card">
+    <form method="post" class="grid-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>Username<input name="username" autocomplete="username" required autofocus></label>
+        <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
+        <div><button type="submit">Sign in</button></div>
+    </form>
+    <p><a href="{{ url_for('password_reset_request') }}">Forgot your password?</a></p>
+</div>
+{% endblock %}

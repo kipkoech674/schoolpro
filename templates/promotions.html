@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">ACADEMIC MANAGEMENT</p><h1>Promote students</h1><p>Move students to a new class while preserving their attendance, grades, and fee history.</p></div></div>
+<div class="card">
+    <h2>Select a source class</h2>
+    <form method="get" class="grid-form">
+        <label>Source class<select name="source_class_id" required>
+            <option value="">Select a class in an open school year</option>
+            {% for item in source_classes %}
+            <option value="{{ item.id }}" {% if source_class and source_class.id == item.id %}selected{% endif %}>{{ item.name }} — {{ item.academic_year }}</option>
+            {% endfor %}
+        </select></label>
+        <div><button>Load students</button></div>
+    </form>
+</div>
+{% if source_class %}
+<div class="card">
+    <h2>Promote from {{ source_class.name }} — {{ source_class.academic_year }}</h2>
+    {% if candidates and destination_classes %}
+    <form method="post" class="grid-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="source_class_id" value="{{ source_class.id }}">
+        <label>Destination class<select name="destination_class_id" required>
+            <option value="">Select a class in a different open year</option>
+            {% for item in destination_classes %}
+            {% if item.academic_year != source_class.academic_year %}
+            <option value="{{ item.id }}">{{ item.name }} — {{ item.academic_year }}</option>
+            {% endif %}
+            {% endfor %}
+        </select></label>
+        <fieldset>
+            <legend>Students</legend>
+            {% for student in candidates %}
+            <label><input type="checkbox" name="student_ids" value="{{ student.id }}"> {{ student.name }} ({{ student.student_number }})</label>
+            {% endfor %}
+        </fieldset>
+        <div><button>Promote selected students</button></div>
+    </form>
+    {% elif not candidates %}
+    <p>No active students are enrolled in this class.</p>
+    {% else %}
+    <p>Create another open school year and destination class before promoting students.</p>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

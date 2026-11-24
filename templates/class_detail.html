@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-heading"><div><h1>{{ school_class.name }}</h1><p>{{ school_class.academic_year }} · Manage class setup and timetable</p></div><a class="secondary-button" href="{{ url_for('classes') }}">Back to classes</a></div>
+<div class="card"><h2>Class settings</h2><form method="post" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="update-class">
+    <label>Room<input name="room" value="{{ school_class.room or '' }}"></label>
+    <label>Capacity<input type="number" name="capacity" min="{{ school_class.enrollments|selectattr('status','equalto','active')|list|length or 1 }}" value="{{ school_class.capacity or '' }}" placeholder="Unlimited"></label>
+    <label>Class teacher<select name="class_teacher_id"><option value="">Not assigned</option>{% for teacher in teachers %}<option value="{{ teacher.id }}" {% if school_class.class_teacher_id == teacher.id %}selected{% endif %}>{{ teacher.username }}</option>{% endfor %}</select></label><div><button>Save settings</button></div>
+</form></div>
+<div class="card"><h2>Subjects</h2><form method="post" class="grid-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="add-subject">
+    <label>Subject name<input name="name" maxlength="80" required></label><label>Teacher (optional)<select name="teacher_id"><option value="">Not assigned</option>{% for teacher in teachers %}<option value="{{ teacher.id }}">{{ teacher.username }}</option>{% endfor %}</select></label><div><button>Add subject</button></div>
+</form>
+{% if school_class.subjects %}<ul>{% for subject in school_class.subjects %}<li>{{ subject.name }}{% if subject.teacher %} — {{ subject.teacher.username }}{% endif %}</li>{% endfor %}</ul>{% else %}<p>No subjects have been added.</p>{% endif %}</div>
+<div class="card"><h2>Timetable</h2>
+{% if school_class.subjects %}<form method="post" class="grid-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="add-slot">
+    <label>Subject<select name="subject_id" required>{% for subject in school_class.subjects %}<option value="{{ subject.id }}">{{ subject.name }}</option>{% endfor %}</select></label><label>Day<select name="weekday">{% for day in weekdays %}<option value="{{ loop.index0 }}">{{ day }}</option>{% endfor %}</select></label><label>Starts<input type="time" name="start_time" required></label><label>Ends<input type="time" name="end_time" required></label><label>Room<input name="room"></label><div><button>Add timetable slot</button></div>
+</form>{% else %}<p>Add a subject before scheduling lessons.</p>{% endif %}
+<div class="table-scroll"><table><thead><tr><th>Day</th><th>Time</th><th>Subject</th><th>Room</th><th></th></tr></thead><tbody>{% for slot in slots %}<tr><td>{{ weekdays[slot.weekday] }}</td><td>{{ slot.start_time.strftime('%H:%M') }}–{{ slot.end_time.strftime('%H:%M') }}</td><td>{{ slot.subject.name }}</td><td>{{ slot.room or '—' }}</td><td><form method="post" action="{{ url_for('delete_timetable_slot', slot_id=slot.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="danger-button">Remove</button></form></td></tr>{% else %}<tr><td colspan="5">No timetable slots yet.</td></tr>{% endfor %}</tbody></table></div>
+</div>
+{% endblock %}

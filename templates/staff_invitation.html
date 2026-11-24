@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Activate staff account | SchoolPro{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">STAFF ACCOUNT</p><h1>Set your password</h1><p>Finish activating your SchoolPro account for {{ user.username }} ({{ user.role|title }}).</p></div></div>
+<section class="card login-card">
+    <p>This invitation is single-use and expires 48 hours after it was sent.</p>
+    <form method="post" class="grid-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>Create password<input type="password" name="password" minlength="12" autocomplete="new-password" required autofocus></label>
+        <label>Confirm password<input type="password" name="confirm_password" minlength="12" autocomplete="new-password" required></label>
+        <div><button type="submit">Activate account</button></div>
+    </form>
+</section>
+{% endblock %}

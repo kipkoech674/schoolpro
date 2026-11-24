@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">STUDENT DIRECTORY</p><h1>{{ "Edit student profile" if student else "Register a student" }}</h1><p>{{ "Update contact and enrollment details for this student." if student else "Add a new student record to the school directory." }}</p></div></div>
+<div class="card">
+<form method="post" enctype="multipart/form-data" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Student number *<input name="student_number" maxlength="30" value="{{ student.student_number if student else '' }}" required></label>
+    <label>Full name *<input name="name" maxlength="120" value="{{ student.name if student else '' }}" required></label>
+    <label>Date of birth<input type="date" name="date_of_birth" max="{{ today }}" value="{{ student.date_of_birth.isoformat() if student and student.date_of_birth else '' }}"></label>
+    <label>Gender
+        {% set gender = student.gender if student else '' %}
+        <select name="gender">
+            <option value="" {% if not gender %}selected{% endif %}>Select</option>
+            <option value="Female" {% if gender == 'Female' %}selected{% endif %}>Female</option>
+            <option value="Male" {% if gender == 'Male' %}selected{% endif %}>Male</option>
+            <option value="Other" {% if gender == 'Other' %}selected{% endif %}>Other</option>
+        </select>
+    </label>
+    <label>Email<input type="email" name="email" maxlength="120" value="{{ student.email if student and student.email else '' }}"></label>
+    <label>Phone<input name="phone" maxlength="30" value="{{ student.phone if student and student.phone else '' }}"></label>
+    <label>Address<textarea name="address">{{ student.address if student and student.address else '' }}</textarea></label>
+    <label>Student photo (JPEG, PNG, or WebP)<input type="file" name="photo" accept="image/jpeg,image/png,image/webp"></label>
+    {% if student and student.photo_filename %}<div><img class="student-photo-preview" src="{{ url_for('student_photo', student_id=student.id) }}" alt="Current photo of {{ student.name }}"></div>{% endif %}
+    <div><button type="submit">{{ "Save Changes" if student else "Register" }}</button></div>
+</form>
+</div>
+{% if student %}
+<p><a href="{{ url_for('student_detail', student_id=student.id) }}">Back to student profile</a></p>
+{% endif %}
+{% endblock %}

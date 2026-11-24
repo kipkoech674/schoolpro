@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% from "_pagination.html" import render_pagination %}
+{% from "_student_picker.html" import student_picker %}
+{% block title %}Fees | SchoolPro{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">FINANCE</p><h1>Fees</h1><p>Create charges, record payments, and track outstanding balances.</p></div><a class="secondary-button" href="{{ url_for('export_fees_csv') }}">Export CSV</a></div>
+<div class="card"><form method="post" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {{ student_picker('fee-student', 'Student') }}
+    <label>Description<input name="description" required></label>
+    <label>Amount<input type="number" step="0.01" min="0.01" name="amount" required></label>
+    <label>School year<select name="academic_year"><option value="">Unassigned year</option>{% for year in school_years %}<option value="{{ year.name }}">{{ year.name }}</option>{% endfor %}</select></label>
+    <label>Due date<input type="date" name="due_date"></label>
+    <div><button>Save Fee</button></div>
+</form></div>
+<div class="card"><div class="table-scroll"><table><thead><tr><th>Student</th><th>Description</th><th>School year</th><th>Amount</th><th>Paid</th><th>Balance</th><th>Due</th><th>Payments</th><th>Record payment</th></tr></thead><tbody>
+{% for item in fees %}
+<tr>
+    <td>{{ item.student.name }}<br><a class="table-link" href="{{ url_for('fee_statement', student_id=item.student_id) }}">Statement</a></td>
+    <td>{{ item.description }}</td>
+    <td>{{ item.academic_year or "Unassigned" }}</td>
+    <td>{{ "%.2f"|format(item.amount) }}</td>
+    <td>{{ "%.2f"|format(item.paid_amount) }}</td>
+    <td>{{ "%.2f"|format(item.amount - item.paid_amount) }}</td>
+    <td>{{ item.due_date or "-" }}</td>
+    <td>
+        {% for payment in item.payments %}
+        <div>{{ payment.payment_date or "Date unknown" }}: {{ "%.2f"|format(payment.amount) }}{% if payment.payment_method %} ({{ payment.payment_method }}){% endif %}{% if payment.reference %} — {{ payment.reference }}{% endif %}{% if payment.notes %}<br>{{ payment.notes }}{% endif %}</div>
+        {% else %}None{% endfor %}
+    </td>
+    <td>
+        {% if item.amount > item.paid_amount %}
+        <form method="post" action="{{ url_for('record_payment', fee_id=item.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label>Amount<input type="number" step="0.01" min="0.01" max="{{ item.amount - item.paid_amount }}" name="amount" required></label>
+            <label>Date<input type="date" name="payment_date" required></label>
+            <label>Method<input name="payment_method" maxlength="40"></label>
+            <label>Reference<input name="reference" maxlength="120"></label>
+            <label>Notes<input name="notes"></label>
+            <button>Record payment</button>
+        </form>
+        {% else %}Paid in full{% endif %}
+    </td>
+</tr>
+{% else %}<tr><td class="table-empty" colspan="9">No fees yet. Add a fee above to begin tracking balances.</td></tr>
+{% endfor %}
+</tbody></table></div>
+{{ render_pagination(pagination, request.endpoint, request.args.to_dict()) }}
+</div>
+{% endblock %}

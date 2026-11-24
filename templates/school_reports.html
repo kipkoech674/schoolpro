@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">INSIGHTS</p><h1>School reports</h1><p>Review enrollment, attendance, academic outcomes, and fee balances.</p></div></div>
+<div class="card">
+    <form method="get" class="grid-form">
+        <label>School year<select name="year">
+            <option value="">All school years</option>
+            {% for year in years %}<option value="{{ year.name }}" {% if selected_year == year.name %}selected{% endif %}>{{ year.name }}{% if year.archived %} (archived){% endif %}</option>{% endfor %}
+        </select></label>
+        <div><button>Run report</button></div>
+    </form>
+</div>
+{% if current_user.role != "finance" %}
+<div class="card">
+    <h2>Enrollments by year and status</h2>
+    <div class="table-scroll compact-table"><table><thead><tr><th>School year</th><th>Status</th><th>Enrollments</th></tr></thead><tbody>
+        {% for year, status, count in enrollment_rows %}<tr><td>{{ year }}</td><td>{{ status|title }}</td><td>{{ count }}</td></tr>
+        {% else %}<tr><td colspan="3">No enrollment records found.</td></tr>{% endfor %}
+    </tbody></table></div>
+</div>
+<div class="card">
+    <h2>Attendance by year and status</h2>
+    <div class="table-scroll compact-table"><table><thead><tr><th>School year</th><th>Status</th><th>Records</th></tr></thead><tbody>
+        {% for year, status, count in attendance_rows %}<tr><td>{{ year }}</td><td>{{ status }}</td><td>{{ count }}</td></tr>
+        {% else %}<tr><td colspan="3">No attendance records found.</td></tr>{% endfor %}
+    </tbody></table></div>
+</div>
+<div class="card">
+    <h2>Grades by year and grading period</h2>
+    <div class="table-scroll compact-table"><table><thead><tr><th>School year</th><th>Period</th><th>Grades</th><th>Average score</th></tr></thead><tbody>
+        {% for year, period, count, average in grade_rows %}<tr><td>{{ year }}</td><td>{{ period }}</td><td>{{ count }}</td><td>{{ "%.2f"|format(average) }}</td></tr>
+        {% else %}<tr><td colspan="4">No grades found.</td></tr>{% endfor %}
+    </tbody></table></div>
+</div>
+{% endif %}
+{% if current_user.role in ["admin", "finance"] %}
+<div class="card">
+    <h2>Outstanding fee balances</h2>
+    <p>Total outstanding: <strong>{{ "%.2f"|format(outstanding_total) }}</strong></p>
+    <div class="table-scroll compact-table"><table><thead><tr><th>Student</th><th>Fee</th><th>School year</th><th>Balance</th></tr></thead><tbody>
+        {% for item in outstanding_fees %}<tr><td>{{ item.student }}</td><td>{{ item.description }}</td><td>{{ item.year }}</td><td>{{ "%.2f"|format(item.balance) }}</td></tr>
+        {% else %}<tr><td colspan="4">No outstanding balances found.</td></tr>{% endfor %}
+    </tbody></table></div>
+</div>
+{% endif %}
+{% endblock %}

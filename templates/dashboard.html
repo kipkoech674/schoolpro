@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | SchoolPro{% endblock %}
+{% block content %}
+<section class="dashboard-hero">
+    <div>
+        <p class="eyebrow">SCHOOL MANAGEMENT PORTAL</p>
+        <h1>Welcome back, {{ current_user.username|title }}</h1>
+        <p>{% if current_user.role == 'teacher' %}Here is an overview of your assigned classes and students.{% else %}Everything you need to keep your school moving forward.{% endif %}</p>
+    </div>
+    <svg aria-hidden="true" viewBox="0 0 160 120"><path d="M80 11 10 41l70 30 70-30-70-30Z"/><path d="M31 52v34c17 17 81 17 98 0V52L80 73 31 52Z"/><path d="M150 41v42"/><circle cx="150" cy="87" r="5"/></svg>
+</section>
+
+<section class="metric-grid" aria-label="School overview">
+    <article class="metric-card students"><span class="metric-icon">&#128100;</span><div><span>Students</span><strong>{{ student_count }}</strong><small>Active student records</small></div></article>
+    <article class="metric-card classes"><span class="metric-icon">&#9638;</span><div><span>Classes</span><strong>{{ class_count }}</strong><small>Classes in your school</small></div></article>
+    <article class="metric-card enrollments"><span class="metric-icon">&#10003;</span><div><span>Active enrollments</span><strong>{{ enrollment_count }}</strong><small>Current placements</small></div></article>
+    {% if current_user.role != 'teacher' %}
+    <article class="metric-card fees"><span class="metric-icon">&#36;</span><div><span>Fees collected</span><strong>{{ "%.2f"|format(fee_paid) }}</strong><small>of {{ "%.2f"|format(fee_total) }} billed</small></div></article>
+    {% endif %}
+</section>
+
+<section class="dashboard-lower">
+    <article class="card quick-actions">
+        <div class="card-title"><div><p class="eyebrow">GET STARTED</p><h2>Quick actions</h2></div></div>
+        <div class="quick-action-list">
+            {% if current_user.role in ['admin', 'registrar'] %}
+            <a href="{{ url_for('new_student') }}"><span>+</span><div><strong>Register a student</strong><small>Create a new student profile</small></div><b>›</b></a>
+            <a href="{{ url_for('enrollments') }}"><span>↗</span><div><strong>Manage enrollments</strong><small>Place students in classes</small></div><b>›</b></a>
+            {% endif %}
+            {% if current_user.role in ['admin', 'teacher'] %}
+            <a href="{{ url_for('attendance') }}"><span>✓</span><div><strong>Take attendance</strong><small>Record today's class attendance</small></div><b>›</b></a>
+            {% endif %}
+            {% if current_user.role in ['admin', 'finance'] %}
+            <a href="{{ url_for('fees') }}"><span>$</span><div><strong>Review fees</strong><small>Check balances and payments</small></div><b>›</b></a>
+            {% endif %}
+        </div>
+    </article>
+    <article class="card school-summary">
+        <p class="eyebrow">AT A GLANCE</p><h2>School overview</h2>
+        <div class="summary-ring"><strong>{{ enrollment_count }}</strong><span>active<br>enrollments</span></div>
+        <p>Your school has <strong>{{ student_count }} active {{ 'student' if student_count == 1 else 'students' }}</strong> across {{ class_count }} {{ 'class' if class_count == 1 else 'classes' }}.</p>
+        <a class="text-link" href="{{ url_for('school_reports') }}">View school reports <span>›</span></a>
+    </article>
+</section>
+{% endblock %}

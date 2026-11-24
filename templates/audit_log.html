@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Audit Log | SchoolPro{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">ADMINISTRATION</p><h1>Audit log</h1><p>Recent sensitive changes made in SchoolPro. The latest 200 events are shown.</p></div><span class="total-pill">{{ events|length }} events</span></div>
+<section class="card table-card audit-table-card">
+    <div class="table-scroll"><table>
+        <thead><tr><th>When</th><th>Staff member</th><th>Action</th><th>Record</th><th>Details</th></tr></thead>
+        <tbody>
+        {% for event in events %}
+        <tr><td>{{ event.created_at.strftime('%d %b %Y, %H:%M') }}</td><td>{{ event.actor.username if event.actor else 'System' }}</td><td><span class="audit-action">{{ event.action|replace('_', ' ')|title }}</span></td><td>{{ event.entity_type|replace('_', ' ')|title }}{% if event.entity_id %} #{{ event.entity_id }}{% endif %}</td><td>{{ event.summary }}</td></tr>
+        {% else %}<tr><td colspan="5" class="empty-state">No auditable actions have been recorded yet.</td></tr>{% endfor %}
+        </tbody>
+    </table></div>
+</section>
+{% endblock %}

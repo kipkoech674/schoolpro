@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">STUDENT PROFILE · {{ student.student_number }}</p><h1>{{ student.name }}</h1><p>Personal details, guardians, and enrollment history.</p></div><div class="heading-actions"><a class="primary-button" href="{{ url_for('edit_student', student_id=student.id) }}">Edit profile</a><a class="secondary-button" href="{{ url_for('students', archived='1' if not student.active else None) }}">Back to students</a></div></div>
+<div class="card">
+    <h2>Student information</h2>
+    {% if student.photo_filename %}<img class="student-photo-preview" src="{{ url_for('student_photo', student_id=student.id) }}" alt="Photo of {{ student.name }}">{% endif %}
+    <p><strong>Student number:</strong> {{ student.student_number }}</p>
+    <p><strong>Status:</strong> {{ "Active" if student.active else "Archived" }}</p>
+    <p><strong>Date of birth:</strong> {{ student.date_of_birth or "-" }}</p>
+    <p><strong>Gender:</strong> {{ student.gender or "-" }}</p>
+    <p><strong>Email:</strong> {{ student.email or "-" }}</p>
+    <p><strong>Phone:</strong> {{ student.phone or "-" }}</p>
+    <p><strong>Address:</strong> {{ student.address or "-" }}</p>
+    <form method="post" action="{{ url_for('restore_student' if not student.active else 'archive_student', student_id=student.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit">{{ "Restore Student" if not student.active else "Archive Student" }}</button>
+    </form>
+</div>
+
+<div class="card">
+    <h2>Parents and guardians</h2>
+    {% if student.guardians %}
+        <div class="table-scroll"><table>
+            <thead><tr><th>Name</th><th>Relationship</th><th>Phone</th><th>Email</th><th>Emergency contact</th><th></th></tr></thead>
+            <tbody>
+            {% for guardian in student.guardians %}
+                <tr>
+                    <td>{{ guardian.name }}</td>
+                    <td>{{ guardian.relationship }}</td>
+                    <td>{{ guardian.phone }}</td>
+                    <td>{{ guardian.email or "-" }}</td>
+                    <td>{{ "Yes" if guardian.is_emergency_contact else "No" }}</td>
+                    <td>
+                        <form method="post" action="{{ url_for('delete_guardian', student_id=student.id, guardian_id=guardian.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit">Remove</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table></div>
+    {% else %}
+        <p>No parent or guardian contacts recorded.</p>
+    {% endif %}
+    <h3>Add a contact</h3>
+    <form method="post" action="{{ url_for('add_guardian', student_id=student.id) }}" class="grid-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>Name *<input name="name" required></label>
+        <label>Relationship *<input name="relationship" placeholder="Parent, guardian..." required></label>
+        <label>Phone *<input name="phone" required></label>
+        <label>Email<input type="email" name="email"></label>
+        <label class="inline-checkbox"><input type="checkbox" name="is_emergency_contact"> Emergency contact</label>
+        <div><button type="submit">Add Contact</button></div>
+    </form>
+</div>
+
+<div class="card">
+    <h2>Enrollment history</h2>
+    {% if enrollment_history %}
+        <div class="table-scroll"><table>
+            <thead><tr><th>Academic year</th><th>Class</th><th>Status</th></tr></thead>
+            <tbody>
+            {% for enrollment in enrollment_history %}
+                <tr>
+                    <td>{{ enrollment.school_class.academic_year }}</td>
+                    <td>{{ enrollment.school_class.name }}</td>
+                    <td>{{ enrollment.status }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table></div>
+    {% else %}
+        <p>No enrollment history recorded.</p>
+    {% endif %}
+</div>
+{% endblock %}

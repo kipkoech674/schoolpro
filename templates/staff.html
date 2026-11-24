@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Staff Management | SchoolPro{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">ADMINISTRATION</p><h1>Staff accounts</h1><p>Create staff access and manage permissions without using the command line.</p></div><span class="total-pill">{{ users|length }} accounts</span></div>
+
+<section class="card staff-create-card">
+    <div class="card-title"><div><p class="eyebrow">NEW ACCOUNT</p><h2>Invite a staff member</h2><p>They’ll receive a one-time link to set their password.</p></div></div>
+    <form method="post" class="grid-form staff-create-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>Full name<input name="display_name" maxlength="120" autocomplete="name" placeholder="e.g. Jane Kimani" required></label>
+        <label>Username<input name="username" maxlength="80" pattern="[A-Za-z0-9._-]{3,80}" autocomplete="username" placeholder="e.g. j.kimani" required></label>
+        <label>Role<select name="role" required>{% for role in ['admin', 'registrar', 'teacher', 'finance'] %}<option value="{{ role }}">{{ role|title }}</option>{% endfor %}</select></label>
+        <label>Staff work email<input type="email" name="email" maxlength="254" autocomplete="email" placeholder="name@school.org" required></label>
+        <div><button type="submit">Send invitation</button></div>
+    </form>
+</section>
+
+<section class="card table-card staff-table-card">
+    <div class="staff-table-heading"><div><p class="eyebrow">ACCESS CONTROL</p><h2>Existing staff</h2></div><p>Disabled users cannot sign in. At least one enabled administrator must remain.</p></div>
+    <div class="table-scroll"><table>
+        <thead><tr><th>Staff member</th><th>Role and status</th><th>Update access</th><th>Password</th></tr></thead>
+        <tbody>
+        {% for user in users %}
+        <tr>
+            <td><div class="staff-person"><span>{{ (user.display_name or user.username)[:2]|upper }}</span><div><strong>{{ user.display_name or user.username }}</strong><small>@{{ user.username }}{% if user.id == current_user.id %} · Your account{% endif %}</small></div></div></td>
+            <td><span class="role-pill">{{ user.role|title }}</span><span class="status-chip{% if not user.enabled %} archived-chip{% endif %}">{% if user.enabled %}Enabled{% elif user.invitation_token_hash %}Invitation pending{% else %}Disabled{% endif %}</span></td>
+            <td>
+                <form method="post" action="{{ url_for('update_staff', user_id=user.id) }}" class="staff-inline-form"{% if user.enabled %} data-confirm="Update {{ user.username }}’s name, role, or access?"{% endif %}>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="text" name="display_name" value="{{ user.display_name or user.username }}" maxlength="120" aria-label="Full name for {{ user.username }}" required>
+                    <input type="email" name="email" value="{{ user.email or '' }}" placeholder="Work email" aria-label="Work email for {{ user.username }}">
+                    <select name="role" aria-label="Role for {{ user.username }}">{% for role in ['admin', 'registrar', 'teacher', 'finance'] %}<option value="{{ role }}" {% if user.role == role %}selected{% endif %}>{{ role|title }}</option>{% endfor %}</select>
+                    <label class="check-label"><input type="checkbox" name="enabled" {% if user.enabled %}checked{% endif %}> Enabled</label>
+                    <button type="submit" class="secondary-button">Save</button>
+                </form>
+            </td>
+            <td>
+                {% if not user.enabled and user.invitation_token_hash %}
+                <form method="post" action="{{ url_for('resend_staff_invitation', user_id=user.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="secondary-button" type="submit">Resend invite</button></form>
+                {% elif user.enabled and user.id != current_user.id %}
+                <form method="post" action="{{ url_for('reset_staff_password', user_id=user.id) }}" data-confirm="Send a password reset link to {{ user.email }}?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="secondary-button" type="submit">Send reset link</button></form>
+                {% elif user.id == current_user.id %}<span class="self-password-note">Use My Profile</span>
+                {% else %}<span class="self-password-note">No action</span>{% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table></div>
+</section>
+{% endblock %}

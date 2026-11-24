@@ -1,0 +1,22 @@
+{% macro student_picker(id, label, class_select='', enrolled_only=false, include_past=false, selected=None, optional=false) -%}
+<div class="student-picker"
+     data-student-picker
+     data-class-select="{{ class_select }}"
+     data-enrolled-only="{{ 'true' if enrolled_only else 'false' }}"
+     data-include-past="{{ 'true' if include_past else 'false' }}"
+     data-optional="{{ 'true' if optional else 'false' }}">
+    <label for="{{ id }}-search">{{ label }}{% if not optional %} <span aria-hidden="true">*</span>{% endif %}</label>
+    <input id="{{ id }}-search" type="search" role="combobox" aria-autocomplete="list"
+           aria-expanded="false" aria-controls="{{ id }}-options" autocomplete="off"
+           placeholder="Search by name or student number{% if class_select %} (select a class first){% endif %}"
+           value="{% if selected %}{{ selected.student_number }} — {{ selected.name }}{% endif %}"
+           {% if not optional %}required{% endif %}>
+    <input type="hidden" id="{{ id }}" name="student_id" value="{{ selected.id if selected else '' }}">
+    <div class="student-picker-menu" hidden>
+        <ul id="{{ id }}-options" role="listbox" aria-label="{{ label }} search results"></ul>
+    </div>
+    <small class="student-picker-status" aria-live="polite">
+        {% if selected %}Selected {{ selected.name }}{% elif optional %}Leave blank to include all students.{% else %}Type at least two characters, then choose a result.{% endif %}
+    </small>
+</div>
+{%- endmacro %}

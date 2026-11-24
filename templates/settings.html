@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Settings | SchoolPro{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">SETTINGS</p><h1>Settings</h1><p>Manage the areas of SchoolPro available to your role.</p></div></div>
+<div class="settings-grid">
+    <a class="setting-card" href="{{ url_for('profile') }}"><span>◉</span><div><strong>My profile</strong><small>Update your password and view account details.</small></div><b>›</b></a>
+    {% if current_user.role == 'admin' %}<a class="setting-card" href="{{ url_for('staff') }}"><span>♙</span><div><strong>Staff accounts</strong><small>Create accounts, assign roles, and control access.</small></div><b>›</b></a>{% endif %}
+    {% if current_user.role == 'admin' %}<a class="setting-card" href="{{ url_for('audit_log') }}"><span>≡</span><div><strong>Audit log</strong><small>Review sensitive staff and record changes.</small></div><b>›</b></a>{% endif %}
+    {% if current_user.role in ['admin', 'registrar'] %}<a class="setting-card" href="{{ url_for('school_years') }}"><span>▣</span><div><strong>School years</strong><small>Create, archive, and manage academic years.</small></div><b>›</b></a>{% endif %}
+    {% if current_user.role in ['admin', 'registrar'] %}<a class="setting-card" href="{{ url_for('classes') }}"><span>▦</span><div><strong>Classes and teachers</strong><small>Manage classes and teacher assignments.</small></div><b>›</b></a>{% endif %}
+    {% if current_user.role in ['admin', 'finance'] %}<a class="setting-card" href="{{ url_for('fees') }}"><span>$</span><div><strong>Fees</strong><small>Review fees, payments, and outstanding balances.</small></div><b>›</b></a>{% endif %}
+</div>
+{% endblock %}

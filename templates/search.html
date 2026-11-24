@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Search | SchoolPro{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">GLOBAL SEARCH</p><h1>Search school records</h1><p>Find records you are allowed to access across the school system.</p></div></div>
+
+<form class="card search-form" method="get">
+    <label for="search-query">Search term</label>
+    <div><input id="search-query" name="q" value="{{ query }}" maxlength="100" placeholder="Student name, number, class, year, or fee"><button class="primary-button" type="submit">Search</button></div>
+</form>
+
+{% if query %}
+<p class="search-summary">Results for <strong>“{{ query }}”</strong></p>
+<div class="search-results">
+    <section class="card result-card">
+        <div class="result-heading"><h2>Students</h2><span>{{ students|length }}</span></div>
+        {% for student in students %}
+        <a href="{% if current_user.role in ['admin', 'registrar'] %}{{ url_for('student_detail', student_id=student.id) }}{% else %}{{ url_for('students', q=student.student_number) }}{% endif %}"><span class="result-icon">S</span><div><strong>{{ student.name }}</strong><small>{{ student.student_number }} · {{ 'Active' if student.active else 'Archived' }}</small></div><b>›</b></a>
+        {% else %}<p class="result-empty">No matching students.</p>{% endfor %}
+    </section>
+    {% if current_user.role in ['admin', 'registrar', 'teacher'] %}
+    <section class="card result-card">
+        <div class="result-heading"><h2>Classes</h2><span>{{ classes|length }}</span></div>
+        {% for item in classes %}
+        <a href="{{ url_for('classes') }}"><span class="result-icon purple">C</span><div><strong>{{ item.name }}</strong><small>{{ item.academic_year }}{% if item.room %} · Room {{ item.room }}{% endif %}</small></div><b>›</b></a>
+        {% else %}<p class="result-empty">No matching classes.</p>{% endfor %}
+    </section>
+    {% endif %}
+    {% if current_user.role in ['admin', 'registrar'] %}
+    <section class="card result-card">
+        <div class="result-heading"><h2>School years</h2><span>{{ school_years|length }}</span></div>
+        {% for year in school_years %}
+        <a href="{{ url_for('school_years') }}"><span class="result-icon orange">Y</span><div><strong>{{ year.name }}</strong><small>{{ 'Archived' if year.archived else 'Open for management' }}</small></div><b>›</b></a>
+        {% else %}<p class="result-empty">No matching school years.</p>{% endfor %}
+    </section>
+    {% endif %}
+    {% if current_user.role in ['admin', 'finance'] %}
+    <section class="card result-card">
+        <div class="result-heading"><h2>Fees</h2><span>{{ fees|length }}</span></div>
+        {% for fee in fees %}
+        <a href="{{ url_for('fees') }}"><span class="result-icon green">$</span><div><strong>{{ fee.description }}</strong><small>{{ fee.student.name }} · Balance {{ "%.2f"|format(fee.amount - fee.paid_amount) }}</small></div><b>›</b></a>
+        {% else %}<p class="result-empty">No matching fees.</p>{% endfor %}
+    </section>
+    {% endif %}
+</div>
+{% else %}
+<div class="card empty-search"><span>⌕</span><h2>Search your school records</h2><p>Enter a student, class, school year, or fee in the search box above.</p></div>
+{% endif %}
+{% endblock %}

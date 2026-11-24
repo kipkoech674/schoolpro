@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}My Profile | SchoolPro{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">ACCOUNT</p><h1>My profile</h1><p>Review your account and keep your sign-in secure.</p></div></div>
+<div class="account-layout">
+    <section class="card account-summary"><div class="profile-avatar">{{ current_user.username[:2]|upper }}</div><h2>{{ current_user.username }}</h2><span class="role-pill">{{ current_user.role|title }}</span><dl><div><dt>Username</dt><dd>{{ current_user.username }}</dd></div><div><dt>Role</dt><dd>{{ current_user.role|title }}</dd></div><div><dt>Account status</dt><dd><span class="status-chip">Active</span></dd></div></dl></section>
+    <section class="card password-card"><p class="eyebrow">SECURITY</p><h2>Change password</h2><p>Use at least 12 characters and keep your password unique.</p><form method="post" class="grid-form password-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Current password<input type="password" name="current_password" autocomplete="current-password" required></label><label>New password<input type="password" name="new_password" minlength="12" autocomplete="new-password" required></label><label>Confirm new password<input type="password" name="confirm_password" minlength="12" autocomplete="new-password" required></label><div><button type="submit">Update password</button></div></form></section>
+</div>
+{% endblock %}

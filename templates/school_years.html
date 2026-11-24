@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}School Years | SchoolPro{% endblock %}
+{% block content %}
+<section class="hero">
+    <div class="hero-icon">
+        <svg viewBox="0 0 48 48"><rect x="7" y="10" width="34" height="31" rx="3"/><path d="M14 5v10M34 5v10M7 19h34M16 27h2M23 27h2M30 27h2M16 34h2M23 34h2M30 34h2"/></svg>
+    </div>
+    <div>
+        <h1>School Years</h1>
+        <p>Create and manage academic years for your school</p>
+    </div>
+    <svg class="hero-art" viewBox="0 0 140 130"><path d="m68 18 62 20-62 23L6 38l62-20Z"/><path d="m27 49 41 15 41-15v23l-41 16-41-16V49Z"/><path d="M130 39v52"/><circle cx="130" cy="96" r="6"/></svg>
+</section>
+
+<section class="card create-card">
+    <div class="section-heading">
+        <div class="heading-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M7 12h10"/></svg>
+        </div>
+        <div>
+            <h2>Create a School Year</h2>
+            <p>Add a new academic year to your school system.</p>
+        </div>
+    </div>
+    <form method="post" class="create-grid">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field">
+            <label for="school-year-name">School Year Name *</label>
+            <div class="input-wrap">
+                <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+                <input id="school-year-name" name="name" maxlength="20" pattern="[0-9]{4}[ ]*-[ ]*([0-9]{2}|[0-9]{4})" title="Use consecutive years, for example 2027 - 2028 or 2027-28." placeholder="e.g. 2027 - 2028" required>
+            </div>
+        </div>
+        <button class="primary-button" type="submit">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M7 12h10"/></svg>
+            Create School Year
+            <svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>
+        </button>
+    </form>
+</section>
+
+<section class="card list-card">
+    <div class="list-heading">
+        <div class="list-icon">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="1"/><path d="M7 2v4M17 2v4M3 9h18M7 13h3M14 13h3M7 17h3M14 17h3"/></svg>
+        </div>
+        <h2>Existing School Years</h2>
+        <span class="total-pill">{{ school_years|length }} total</span>
+    </div>
+    <div class="table-wrap">
+        <table class="year-table">
+            <thead>
+                <tr><th>School Year</th><th>Status</th><th>Classes</th><th>Manage</th></tr>
+            </thead>
+            <tbody>
+            {% for year in school_years %}
+            <tr>
+                <td>
+                    <div class="year-cell">
+                        <div class="year-calendar">
+                            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+                        </div>
+                        <div>
+                            <strong>{{ year.name }}</strong>
+                            <small>Created {{ year.created_at.strftime("%b %d, %Y") if year.created_at else "today" }}</small>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    {% if year.archived %}
+                    <form method="post" action="{{ url_for('archive_school_year', year_id=year.id) }}" class="inline-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="action" value="reopen">
+                        <button class="status-badge archived" type="submit" title="Click to reopen">
+                        <svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="8"/><path d="m6 10 3 3 5-6" fill="none" stroke="white" stroke-width="2"/></svg>
+                        Archived
+                        </button>
+                    </form>
+                    {% else %}
+                    <form method="post" action="{{ url_for('archive_school_year', year_id=year.id) }}" class="inline-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="action" value="archive">
+                        <button class="status-badge active" type="submit" title="Click to archive">
+                        <svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="8"/><path d="m6 10 3 3 5-6" fill="none" stroke="white" stroke-width="2"/></svg>
+                        Active
+                        </button>
+                    </form>
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="class-count">
+                        <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21c1-5 12-5 14 0M17 3a4 4 0 0 1 0 8M17 14c3 0 5 2 5 5"/></svg>
+                        {{ year.classes|length }} Classes
+                    </span>
+                </td>
+                <td>
+                    <div class="actions-row">
+                        <a class="action-button" href="{{ url_for('school_reports', year=year.name) }}">
+                            <svg viewBox="0 0 24 24"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            View
+                        </a>
+                        <form method="post" action="{{ url_for('edit_school_year', year_id=year.id) }}" class="edit-year-form" data-name="{{ year.name }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="name" value="{{ year.name }}">
+                            <button class="action-button edit edit-year-button" type="button">
+                                <svg viewBox="0 0 24 24"><path d="m4 16-1 5 5-1L19 9l-4-4L4 16Z"/><path d="m13 7 4 4"/></svg>
+                                Edit
+                            </button>
+                        </form>
+                        <form method="post" action="{{ url_for('delete_school_year', year_id=year.id) }}" data-confirm="Delete this school year? This cannot be undone." class="inline-form">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="action-button delete" type="submit">
+                                <svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V3h8v3M6 6l1 15h10l1-15M10 10v7M14 10v7"/></svg>
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="empty-state">No school years have been created.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<dialog class="edit-year-dialog" id="edit-year-dialog" aria-labelledby="edit-year-title">
+    <form method="dialog" class="dialog-panel">
+        <button class="dialog-close" value="cancel" aria-label="Close">×</button>
+        <p class="eyebrow">SCHOOL YEAR</p>
+        <h2 id="edit-year-title">Edit school year</h2>
+        <p>Update the display name for this academic year.</p>
+        <label for="edit-year-name">School year name</label>
+        <input id="edit-year-name" maxlength="20" pattern="[0-9]{4}[ ]*-[ ]*([0-9]{2}|[0-9]{4})" title="Use consecutive years, for example 2027 - 2028 or 2027-28." required>
+        <div class="dialog-actions">
+            <button class="secondary-button" value="cancel">Cancel</button>
+            <button class="primary-button" id="save-year-edit" value="default">Save changes</button>
+        </div>
+    </form>
+</dialog>
+
+<div class="page-footer">
+    <svg viewBox="0 0 24 24"><path d="M2 10 12 5l10 5-10 5-10-5Z"/><path d="M6 12v5c2 2 12 2 12 0v-5"/></svg>
+    Building a better learning future
+</div>
+{% endblock %}

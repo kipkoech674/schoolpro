@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">ACADEMIC MANAGEMENT</p><h1>Academic terms</h1><p>Set non-overlapping dates for attendance and report cards.</p></div></div>
+<div class="card"><h2>{{ 'Edit term' if editing else 'Create a term' }}</h2><form method="post" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% if editing %}<input type="hidden" name="term_id" value="{{ editing.id }}">{% endif %}
+    <label>School year<select name="school_year_id" required><option value="">Choose school year</option>{% for year in years if not year.archived or (editing and editing.school_year_id == year.id) %}<option value="{{ year.id }}" {% if editing and editing.school_year_id == year.id %}selected{% endif %}>{{ year.name }}{% if year.archived %} (archived){% endif %}</option>{% endfor %}</select></label>
+    <label>Term name<input name="name" maxlength="40" placeholder="Term 1" value="{{ editing.name if editing else '' }}" required></label>
+    <label>Starts<input type="date" name="start_date" value="{{ editing.start_date.isoformat() if editing else '' }}" required></label>
+    <label>Ends<input type="date" name="end_date" value="{{ editing.end_date.isoformat() if editing else '' }}" required></label><div><button>{{ 'Save changes' if editing else 'Create term' }}</button>{% if editing %} <a class="secondary-button" href="{{ url_for('terms') }}">Cancel</a>{% endif %}</div>
+</form></div>
+<div class="card"><div class="table-scroll"><table><thead><tr><th>Term</th><th>School year</th><th>Date range</th><th>Grades</th><th>Manage</th></tr></thead><tbody>
+{% for term in terms %}<tr><td>{{ term.name }}</td><td>{{ term.school_year.name }}</td><td>{{ term.start_date }} – {{ term.end_date }}</td><td>{{ grade_counts[term.id] }}</td><td><a class="table-link" href="{{ url_for('terms', edit=term.id) }}">Edit</a><form method="post" action="{{ url_for('delete_term', term_id=term.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="danger-button">Delete</button></form></td></tr>{% else %}<tr><td colspan="5">No terms have been defined.</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}
